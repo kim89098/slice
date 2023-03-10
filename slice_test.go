@@ -236,6 +236,24 @@ func TestReverseCopy(t *testing.T) {
 	}
 }
 
+func TestSort(t *testing.T) {
+	c1, w1 := []int{1, 3, 2, 4}, []int{1, 2, 3, 4}
+	slice.Sort(c1, func(a, b int) bool { return a < b })
+	if !slice.Equals(c1, w1) {
+		t.Errorf("got %v, want %v", c1, w1)
+	}
+
+	type t2 struct {
+		a int
+	}
+
+	c2, w2 := []t2{{1}, {3}, {2}, {4}}, []t2{{1}, {2}, {3}, {4}}
+	slice.Sort(c2, func(a, b t2) bool { return a.a < b.a })
+	if !slice.Equals(c2, w2) {
+		t.Errorf("got %v, want %v", c2, w2)
+	}
+}
+
 func TestSum(t *testing.T) {
 	testCases := []struct {
 		s    []int

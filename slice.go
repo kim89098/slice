@@ -3,6 +3,7 @@ package slice
 
 import (
 	"math/rand"
+	"sort"
 	"time"
 
 	"golang.org/x/exp/constraints"
@@ -166,6 +167,15 @@ func ReverseCopy[S ~[]E, E any](s S) S {
 	}
 
 	return n
+}
+
+// Sort sorts the elements of slice s in increasing order, according to the
+// order defined by the less function. The less function returns true if the
+// first element should be ordered before the second element.
+func Sort[S ~[]E, E any](s S, less func(a, b E) bool) {
+	sort.Slice(s, func(i, j int) bool {
+		return less(s[i], s[j])
+	})
 }
 
 // Sum returns the sum of all elements in a slice of type T.
