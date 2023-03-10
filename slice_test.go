@@ -150,14 +150,14 @@ func TestMap(t *testing.T) {
 		t.Errorf("got %v, want []string{2, 4, 6}", r2)
 	}
 
-	r3 := slice.Map(nil, func(v int) int { return v * 2 })
+	r3 := slice.Map([]int(nil), func(v int) int { return v * 2 })
 	if !slice.Equals(r3, nil) {
 		t.Errorf("got %v, want nil", r3)
 	}
 }
 
 func TestRandom(t *testing.T) {
-	r1, s1 := slice.Random[int](nil)
+	r1, s1 := slice.Random([]int(nil))
 	if r1 != 0 || s1 != nil {
 		t.Errorf("got %v, %v, want 0, nil", r1, s1)
 	}
