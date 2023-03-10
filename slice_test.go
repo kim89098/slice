@@ -164,7 +164,7 @@ func TestRandom(t *testing.T) {
 
 	r2, s2 := slice.Random([]int{})
 	if r2 != 0 || s2 != nil {
-		t.Errorf("got %v, %v, want 0, nil", r1, s1)
+		t.Errorf("got %v, %v, want 0, nil", r2, s2)
 	}
 
 	c := []int{1, 2, 3, 4, 5}
