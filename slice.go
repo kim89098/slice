@@ -176,13 +176,3 @@ func Sum[T Number](s []T) T {
 	}
 	return sum
 }
-
-func newSet[T comparable](s []T) map[T]bool {
-	m := make(map[T]bool)
-
-	for _, v := range s {
-		m[v] = true
-	}
-
-	return m
-}
