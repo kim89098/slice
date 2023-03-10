@@ -44,6 +44,8 @@ func TestEqualsAnyOrder(t *testing.T) {
 
 		{[]int{1}, []int{1, 2}, false},
 		{[]int{1, 2}, []int{1}, false},
+
+		{[]int{1, 2, 3, 3}, []int{1, 2, 2, 3}, false},
 	}
 
 	for _, c := range testCases {

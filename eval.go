@@ -21,10 +21,18 @@ func EqualsAnyOrder[T comparable](a, b []T) bool {
 		return false
 	}
 
-	m := newSet(a)
+	ma := make(map[T]int)
+	for _, v := range a {
+		ma[v]++
+	}
 
+	mb := make(map[T]int)
 	for _, v := range b {
-		if !m[v] {
+		mb[v]++
+	}
+
+	for k, v := range ma {
+		if mb[k] != v {
 			return false
 		}
 	}
