@@ -139,6 +139,27 @@ func TestGroup(t *testing.T) {
 	}
 }
 
+func TestInsert(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		i    int
+		v    int
+		want []int
+	}{
+		{[]int{1, 2, 3}, 0, 4, []int{4, 1, 2, 3}},
+		{[]int{1, 2, 3}, 1, 4, []int{1, 4, 2, 3}},
+		{[]int{1, 2, 3}, 2, 4, []int{1, 2, 4, 3}},
+		{[]int{1, 2, 3}, 3, 4, []int{1, 2, 3, 4}},
+		{[]int{1, 2, 3}, 4, 4, []int{1, 2, 3, 4}},
+	}
+
+	for _, c := range testCases {
+		if r := slice.Insert(c.s, c.i, c.v); !slice.Equals(r, c.want) {
+			t.Errorf("got %v, want %v", r, c.want)
+		}
+	}
+}
+
 func TestMap(t *testing.T) {
 	r1 := slice.Map([]int{1, 2, 3}, func(v int) int { return v * 2 })
 	if !slice.Equals(r1, []int{2, 4, 6}) {
@@ -153,6 +174,41 @@ func TestMap(t *testing.T) {
 	r3 := slice.Map([]int(nil), func(v int) int { return v * 2 })
 	if !slice.Equals(r3, nil) {
 		t.Errorf("got %v, want nil", r3)
+	}
+}
+
+func TestMove(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		a, b int
+		want []int
+	}{
+		{[]int{1, 2, 3, 4}, 1, 2, []int{1, 3, 2, 4}},
+		{[]int{1, 2, 3, 4}, 2, 1, []int{1, 3, 2, 4}},
+		{[]int{1, 2, 3, 4}, 0, 3, []int{2, 3, 4, 1}},
+		{[]int{1, 2, 3, 4}, 3, 0, []int{4, 1, 2, 3}},
+		{[]int{1, 2, 3, 4}, 1, 1, []int{1, 2, 3, 4}},
+	}
+
+	for _, c := range testCases {
+		slice.Move(c.s, c.a, c.b)
+		if !slice.Equals(c.s, c.want) {
+			t.Errorf("got %v, want %v", c.s, c.want)
+		}
+	}
+}
+
+func TestNoNil(t *testing.T) {
+	if r := slice.NoNil([]int(nil)); r == nil || len(r) != 0 {
+		t.Errorf("got %v, want %v", r, []int{})
+	}
+
+	if r := slice.NoNil([]int{}); r == nil || len(r) != 0 {
+		t.Errorf("got %v, want %v", r, []int{})
+	}
+
+	if r := slice.NoNil([]int{1}); !slice.Equals(r, []int{1}) {
+		t.Errorf("got %v, want %v", r, []int{1})
 	}
 }
 
@@ -172,6 +228,24 @@ func TestRandom(t *testing.T) {
 		r, s := slice.Random(c)
 		if !slice.EqualsAnyOrder(append(s, r), c) {
 			t.Errorf("got %v, %v", r, s)
+		}
+	}
+}
+
+func TestRange(t *testing.T) {
+	testCases := []struct {
+		start int
+		end   int
+		want  []int
+	}{
+		{1, 4, []int{1, 2, 3}},
+		{1, 1, []int{}},
+		{1, -1, nil},
+	}
+
+	for _, c := range testCases {
+		if r := slice.Range(c.start, c.end); !slice.Equals(r, c.want) {
+			t.Errorf("got %v, want %v", r, c.want)
 		}
 	}
 }
@@ -197,6 +271,71 @@ func TestReduceRight(t *testing.T) {
 	r2 := slice.ReduceRight([]int{1, 2, 3}, func(v int, acc string) string { return fmt.Sprint(v) + acc }, "")
 	if r2 != "123" {
 		t.Errorf("got %v, want 123", r2)
+	}
+}
+
+func TestRemove(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		v    int
+		want []int
+	}{
+		{[]int{1, 2, 3}, 1, []int{2, 3}},
+		{[]int{1, 2, 3}, 2, []int{1, 3}},
+		{[]int{1, 2, 3}, 3, []int{1, 2}},
+		{[]int{1, 2, 3}, 4, []int{1, 2, 3}},
+
+		{[]int{}, 4, []int{}},
+		{nil, 4, nil},
+	}
+
+	for _, c := range testCases {
+		if r := slice.Remove(c.s, c.v); !slice.Equals(r, c.want) {
+			t.Errorf("got %v, want %v", r, c.want)
+		}
+	}
+}
+
+func TestRemoveFunc(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		f    func(v int) bool
+		want []int
+	}{
+		{[]int{1, 2, 3}, func(v int) bool { return true }, []int{2, 3}},
+		{[]int{1, 2, 3}, func(v int) bool { return false }, []int{1, 2, 3}},
+		{[]int{1, 2, 3}, func(v int) bool { return v == 2 }, []int{1, 3}},
+
+		{[]int{}, func(v int) bool { return true }, []int{}},
+		{nil, func(v int) bool { return true }, nil},
+	}
+
+	for _, c := range testCases {
+		if r := slice.RemoveFunc(c.s, c.f); !slice.Equals(r, c.want) {
+			t.Errorf("got %v, want %v", r, c.want)
+		}
+	}
+}
+
+func TestRemoveIndex(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		i    int
+		want []int
+	}{
+		{[]int{1, 2, 3}, 0, []int{2, 3}},
+		{[]int{1, 2, 3}, 1, []int{1, 3}},
+		{[]int{1, 2, 3}, 2, []int{1, 2}},
+		{[]int{1, 2, 3}, 3, []int{1, 2, 3}},
+
+		{[]int{}, 4, []int{}},
+		{nil, 4, nil},
+	}
+
+	for _, c := range testCases {
+		if r := slice.RemoveIndex(c.s, c.i); !slice.Equals(r, c.want) {
+			t.Errorf("got %v, want %v", r, c.want)
+		}
 	}
 }
 
@@ -232,6 +371,24 @@ func TestReverseCopy(t *testing.T) {
 	for _, c := range testCases {
 		if r := slice.ReverseCopy(c.s); !slice.Equals(r, c.want) {
 			t.Errorf("got %v, want %v", r, c.want)
+		}
+	}
+}
+
+func TestShuffle(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		want []int
+	}{
+		{[]int{}, []int{}},
+		{[]int{1}, []int{1}},
+		{[]int{1, 2, 3}, []int{1, 2, 3}},
+	}
+
+	for _, c := range testCases {
+		slice.Shuffle(c.s)
+		if !slice.EqualsAnyOrder(c.s, c.want) {
+			t.Errorf("got %v, want %v", c.s, c.want)
 		}
 	}
 }

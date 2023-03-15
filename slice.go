@@ -106,6 +106,15 @@ func Group[S ~[]E, E any, K comparable](s S, f func(E) K) map[K]S {
 	return m
 }
 
+// Insert inserts the element v into slice s at the given index i.
+func Insert[S ~[]E, E any](s S, i int, v E) S {
+	if i >= len(s) {
+		return append(s, v)
+	}
+
+	return append(s[:i], append(S{v}, s[i:]...)...)
+}
+
 // Map applies the given function to every element in the slice and returns a new slice containing the results.
 func Map[S ~[]E, E, R any](s S, f func(E) R) []R {
 	if len(s) == 0 {
@@ -121,6 +130,32 @@ func Map[S ~[]E, E, R any](s S, f func(E) R) []R {
 	return n
 }
 
+// Move moves the element at index a to index b in slice s.
+func Move[S ~[]E, E any](s S, a, b int) {
+	if a == b {
+		return
+	}
+
+	v := s[a]
+
+	if a < b {
+		copy(s[a:], s[a+1:b+1])
+	} else {
+		copy(s[b+1:], s[b:a])
+	}
+
+	s[b] = v
+}
+
+// NoNil returns the input slice with a non-nil value. If the input slice is nil,
+// it returns a new empty slice of the same type.
+func NoNil[S ~[]E, E any](s S) S {
+	if s == nil {
+		return S{}
+	}
+	return s
+}
+
 // Random returns a random element from a slice and a new slice with the randomly selected element removed. If the input slice is empty, it returns a zero value and a nil slice.
 func Random[S ~[]E, E any](s S) (E, S) {
 	if len(s) == 0 {
@@ -130,6 +165,20 @@ func Random[S ~[]E, E any](s S) (E, S) {
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(len(s))
 	return s[r], append(s[:r], s[r+1:]...)
+}
+
+// Range returns a slice of integers from start (inclusive) to end (exclusive).
+// If start is greater than or equal to end, an empty slice is returned.
+func Range[T constraints.Integer](start, end T) []T {
+	if start > end {
+		return nil
+	}
+
+	s := make([]T, 0, end-start)
+	for i := start; i < end; i++ {
+		s = append(s, i)
+	}
+	return s
 }
 
 // Reduce applies a function to each element of a slice, accumulating the result into an initial value.
@@ -151,6 +200,22 @@ func ReduceRight[S ~[]E, E, R any](s S, f func(v E, acc R) R, init R) R {
 	return init
 }
 
+func Remove[S ~[]E, E comparable](s S, v E) S {
+	return RemoveIndex(s, IndexOf(s, v))
+}
+
+func RemoveFunc[S ~[]E, E any](s S, f func(E) bool) S {
+	return RemoveIndex(s, FindIndex(s, f))
+}
+
+func RemoveIndex[S ~[]E, E any](s S, i int) S {
+	if i < 0 || i >= len(s) {
+		return s
+	}
+
+	return append(s[:i], s[i+1:]...)
+}
+
 // Reverse reverses the elements of a slice in place.
 func Reverse[S ~[]E, E any](s S) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
@@ -167,6 +232,14 @@ func ReverseCopy[S ~[]E, E any](s S) S {
 	}
 
 	return n
+}
+
+// Shuffle randomizes the order of elements in the given slice using rand.Shuffle.
+// Note that the function modifies the original slice, and does not return a new one.
+func Shuffle[S ~[]E, E any](s S) {
+	rand.Shuffle(len(s), func(i, j int) {
+		s[i], s[j] = s[j], s[i]
+	})
 }
 
 // Sort sorts the elements of slice s in increasing order, according to the
