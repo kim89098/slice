@@ -27,6 +27,60 @@ func TestDedup(t *testing.T) {
 	}
 }
 
+func TestExpand2D(t *testing.T) {
+	testCases := []struct {
+		s    [][]int
+		m, n int
+		want [][]int
+	}{
+		{
+			[][]int{
+				{1, 2},
+			},
+			2, 3,
+			[][]int{
+				{1, 2, 0},
+				{0, 0, 0},
+			},
+		},
+		{
+			nil,
+			2, 3,
+			[][]int{
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+		},
+		{
+			[][]int{
+				{1, 2, 3, 4},
+				{5, 6, 7, 8},
+				{9, 10, 11},
+			},
+			2, 3,
+			[][]int{
+				{1, 2, 3, 4},
+				{5, 6, 7, 8},
+				{9, 10, 11},
+			},
+		},
+	}
+
+	for _, c := range testCases {
+		r := slice.Expand2D(c.s, c.m, c.n)
+
+		if len(r) != len(c.want) {
+			t.Errorf("len(r) = %v, want %v", len(r), len(c.want))
+		}
+
+		for i, s := range r {
+			if !slice.Equals(s, c.want[i]) {
+				t.Errorf("got %v, want %v", s, c.want[i])
+			}
+		}
+	}
+}
+
 func TestFill(t *testing.T) {
 	testCases := []struct {
 		s    []int
@@ -156,6 +210,30 @@ func TestInsert(t *testing.T) {
 	for _, c := range testCases {
 		if r := slice.Insert(c.s, c.i, c.v); !slice.Equals(r, c.want) {
 			t.Errorf("got %v, want %v", r, c.want)
+		}
+	}
+}
+
+func TestMake2D(t *testing.T) {
+	testCases := []struct {
+		m, n int
+	}{
+		{0, 0},
+		{1, 1},
+		{2, 3},
+	}
+
+	for _, c := range testCases {
+		r := slice.Make2D[int](c.m, c.n)
+
+		if len(r) != c.m {
+			t.Errorf("len(r) = %v, want %v", len(r), c.m)
+		}
+
+		for _, s := range r {
+			if len(s) != c.n {
+				t.Errorf("len(s) = %v, want %v", len(s), c.n)
+			}
 		}
 	}
 }

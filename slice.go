@@ -33,6 +33,26 @@ func Dedup[S ~[]E, E comparable](s S) S {
 	return n
 }
 
+// Expand2D expands a 2D slice ss to m rows and n columns, adding elements to any short rows and appending any short columns.
+func Expand2D[SS ~[]S, S ~[]E, E any](ss SS, m, n int) SS {
+	var zeros S
+
+	for i, s := range ss {
+		if l := len(s); l < n {
+			if zeros == nil {
+				zeros = make(S, n)
+			}
+			ss[i] = append(s, zeros[:n-l]...)
+		}
+	}
+
+	for len(ss) < m {
+		ss = append(ss, make(S, n))
+	}
+
+	return ss
+}
+
 // Fill fills the entire slice with a given value.
 func Fill[S ~[]E, E any](s S, v E) {
 	for i := range s {
@@ -113,6 +133,31 @@ func Insert[S ~[]E, E any](s S, i int, v E) S {
 	}
 
 	return append(s[:i], append(S{v}, s[i:]...)...)
+}
+
+// Make2D returns a new 2D slice with m rows and n columns.
+func Make2D[T any](m, n int) [][]T {
+	if m == 0 {
+		return nil
+	}
+
+	mat := make([][]T, m)
+
+	if n == 0 {
+		return mat
+	}
+
+	mem := make([]T, m*n)
+
+	start, end := 0, n
+
+	for i := range mat {
+		mat[i] = mem[start:end:end]
+		start += n
+		end += n
+	}
+
+	return mat
 }
 
 // Map applies the given function to every element in the slice and returns a new slice containing the results.
