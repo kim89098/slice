@@ -356,6 +356,7 @@ func TestMake2D(t *testing.T) {
 		m, n int
 	}{
 		{0, 0},
+		{1, 0},
 		{1, 1},
 		{2, 3},
 	}
