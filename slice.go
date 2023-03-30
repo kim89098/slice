@@ -14,6 +14,36 @@ type Number interface {
 	constraints.Complex | constraints.Float | constraints.Integer
 }
 
+// Chunk returns a new slice of slices where each slice contains at most the given size number of elements from the original slice.
+func Chunk[S ~[]E, E any](slice S, size int) []S {
+	n := (len(slice) + size - 1) / size
+
+	r := make([]S, n)
+	for i := range r {
+		start := i * size
+		end := (i + 1) * size
+		if end > len(slice) {
+			end = len(slice)
+		}
+		r[i] = slice[start:end]
+	}
+	return r
+}
+
+// Concat returns a new slice containing all the elements of the input slices in order.
+func Concat[S ~[]E, E any](ss ...S) S {
+	var totalLen int
+	for _, s := range ss {
+		totalLen += len(s)
+	}
+
+	r := make(S, 0, totalLen)
+	for _, s := range ss {
+		r = append(r, s...)
+	}
+	return r
+}
+
 // Dedup returns a new slice containing only the unique elements of the input slice.
 func Dedup[S ~[]E, E comparable](s S) S {
 	if len(s) == 0 {
@@ -86,6 +116,17 @@ func Filter[S ~[]E, E any](s S, f func(E) bool) S {
 	return n
 }
 
+// FilterMap returns a new slice containing the elements of the input slice that satisfy filterFunc, transformed by mapFunc.
+func FilterMap[S ~[]E, E, R any](s S, filterFunc func(E) bool, mapFunc func(E) R) []R {
+	n := make([]R, 0, len(s))
+	for _, v := range s {
+		if filterFunc(v) {
+			n = append(n, mapFunc(v))
+		}
+	}
+	return n
+}
+
 // Flat flattens a slice of slices into a single slice.
 func Flat[SS ~[]S, S ~[]E, E any](s SS) S {
 	l := Reduce(s, func(v S, acc int) int { return len(v) + acc }, 0)
@@ -121,6 +162,19 @@ func Group[S ~[]E, E any, K comparable](s S, f func(E) K) map[K]S {
 	for _, v := range s {
 		key := f(v)
 		m[key] = append(m[key], v)
+	}
+
+	return m
+}
+
+// GroupMap groups the elements of a slice by applying a key function and a map function to each element,
+// using the result of the key function as a key in a map and the result of the map function as a value in a slice.
+func GroupMap[S ~[]E, E any, K comparable, V any](s S, keyFunc func(E) K, mapFunc func(E) V) map[K][]V {
+	m := make(map[K][]V)
+
+	for _, v := range s {
+		key := keyFunc(v)
+		m[key] = append(m[key], mapFunc(v))
 	}
 
 	return m
@@ -309,4 +363,24 @@ func Sum[S ~[]E, E Number](s S) E {
 		sum += v
 	}
 	return sum
+}
+
+type Zipped[A, B any] struct {
+	A A
+	B B
+}
+
+// Zip returns a new slice of pairs where the i-th pair contains the i-th elements of each of the input slices.
+// If the input slices have different lengths, the resulting slice will have length equal to the length of the shortest input slice.
+func Zip[SA ~[]A, SB ~[]B, A, B any](sa SA, sb SB) []Zipped[A, B] {
+	n := len(sa)
+	if len(sb) < n {
+		n = len(sb)
+	}
+
+	r := make([]Zipped[A, B], n)
+	for i := 0; i < n; i++ {
+		r[i] = Zipped[A, B]{sa[i], sb[i]}
+	}
+	return r
 }

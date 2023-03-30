@@ -6,6 +6,22 @@ import (
 	"github.com/kim89098/slice"
 )
 
+func TestCount(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		f    func(v int) bool
+		want int
+	}{
+		{[]int{1, 2, 3, 4, 5}, func(v int) bool { return v > 3 }, 2},
+	}
+
+	for _, c := range testCases {
+		if r := slice.Count(c.s, c.f); r != c.want {
+			t.Errorf("Count(%v, func) = %v, want %v", c.s, r, c.want)
+		}
+	}
+}
+
 func TestEquals(t *testing.T) {
 	testCases := []struct {
 		a, b []int

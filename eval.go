@@ -1,5 +1,16 @@
 package slice
 
+// Count returns the number of elements in the slice that satisfy the given function.
+func Count[S ~[]E, E any](s S, f func(E) bool) int {
+	var c int
+	for _, v := range s {
+		if f(v) {
+			c++
+		}
+	}
+	return c
+}
+
 // Equals returns true if the two slices contain the same elements in the same order.
 func Equals[S ~[]E, E comparable](a, b S) bool {
 	if len(a) != len(b) {

@@ -7,6 +7,54 @@ import (
 	"github.com/kim89098/slice"
 )
 
+func TestChunk(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		i    int
+		want [][]int
+	}{
+		{[]int{1, 2, 3, 4, 5}, 1, [][]int{{1}, {2}, {3}, {4}, {5}}},
+		{[]int{1, 2, 3, 4, 5}, 2, [][]int{{1, 2}, {3, 4}, {5}}},
+		{[]int{1, 2, 3, 4, 5}, 5, [][]int{{1, 2, 3, 4, 5}}},
+		{[]int{1, 2, 3, 4, 5}, 6, [][]int{{1, 2, 3, 4, 5}}},
+
+		{nil, 1, [][]int{}},
+	}
+
+	for _, c := range testCases {
+		r := slice.Chunk(c.s, c.i)
+
+		if len(r) != len(c.want) {
+			t.Errorf("Chunk(%v, %v) = %v, want %v", c.s, c.i, r, c.want)
+			continue
+		}
+
+		for i, w := range c.want {
+			if !slice.Equals(r[i], w) {
+				t.Errorf("Chunk(%v, %v) = %v, want %v", c.s, c.i, r, c.want)
+				break
+			}
+		}
+	}
+}
+
+func TestConcat(t *testing.T) {
+	testCases := []struct {
+		ss   [][]int
+		want []int
+	}{
+		{[][]int{{1, 2}, {3, 4}, {5}}, []int{1, 2, 3, 4, 5}},
+		{[][]int{nil, nil, nil}, []int{}},
+		{[][]int{nil, {1}, nil}, []int{1}},
+	}
+
+	for _, c := range testCases {
+		if r := slice.Concat(c.ss...); !slice.Equals(r, c.want) {
+			t.Errorf("Concat(%v) = %v, want %v", c.ss, r, c.want)
+		}
+	}
+}
+
 func TestDedup(t *testing.T) {
 	testCases := []struct {
 		s    []int
@@ -139,6 +187,52 @@ func TestFilter(t *testing.T) {
 	}
 }
 
+func TestFilterMap(t *testing.T) {
+	testCases := []struct {
+		s          []int
+		filterFunc func(int) bool
+		mapFunc    func(int) string
+		want       []string
+	}{
+		{
+			[]int{1, 2, 3},
+			func(v int) bool { return v%2 == 0 },
+			func(v int) string { return fmt.Sprint(v) },
+			[]string{"2"},
+		},
+		{
+			[]int{1, 2, 3},
+			func(v int) bool { return false },
+			func(v int) string { return fmt.Sprint(v) },
+			[]string{},
+		},
+		{
+			[]int{1, 2, 3},
+			func(v int) bool { return true },
+			func(v int) string { return fmt.Sprint(v) },
+			[]string{"1", "2", "3"},
+		},
+		{
+			[]int{},
+			func(v int) bool { return false },
+			func(v int) string { return fmt.Sprint(v) },
+			[]string{},
+		},
+		{
+			nil,
+			func(v int) bool { return false },
+			func(v int) string { return fmt.Sprint(v) },
+			[]string{},
+		},
+	}
+
+	for _, c := range testCases {
+		if r := slice.FilterMap(c.s, c.filterFunc, c.mapFunc); !slice.Equals(r, c.want) {
+			t.Errorf("FilterMap(%v, func, func) = %v, want %v", c.s, r, c.want)
+		}
+	}
+}
+
 func TestFlat(t *testing.T) {
 	testCases := []struct {
 		s    [][]int
@@ -190,6 +284,49 @@ func TestGroup(t *testing.T) {
 	}
 	if !slice.Equals(r2[false], []int{1, 3}) {
 		t.Errorf("got %v, want [1,3]", r2[false])
+	}
+}
+
+func TestGroupMap(t *testing.T) {
+	testCases := []struct {
+		s       []int
+		keyFunc func(int) int
+		mapFunc func(int) string
+		want    map[int][]string
+	}{
+		{
+			[]int{1, 2, 3, 4},
+			func(v int) int { return v % 2 },
+			func(v int) string { return fmt.Sprint(v) },
+			map[int][]string{0: []string{"2", "4"}, 1: []string{"1", "3"}},
+		},
+		{
+			[]int{},
+			func(v int) int { return v % 2 },
+			func(v int) string { return fmt.Sprint(v) },
+			map[int][]string{},
+		},
+		{
+			nil,
+			func(v int) int { return v % 2 },
+			func(v int) string { return fmt.Sprint(v) },
+			map[int][]string{},
+		},
+	}
+
+	for _, c := range testCases {
+		r := slice.GroupMap(c.s, c.keyFunc, c.mapFunc)
+		if len(r) != len(c.want) {
+			t.Errorf("GroupMap(%v, func, func) = %v, want %v", c.s, r, c.want)
+			continue
+		}
+
+		for k, v := range c.want {
+			if !slice.Equals(r[k], v) {
+				t.Errorf("GroupMap(%v, func, func) = %v, want %v", c.s, r, c.want)
+				break
+			}
+		}
 	}
 }
 
@@ -503,6 +640,50 @@ func TestSum(t *testing.T) {
 	for _, c := range testCases {
 		if r := slice.Sum(c.s); r != c.want {
 			t.Errorf("got %v, want %v", r, c.want)
+		}
+	}
+}
+
+func TestZip(t *testing.T) {
+	testCases := []struct {
+		a, b []int
+		want []slice.Zipped[int, int]
+	}{
+		{
+			[]int{1, 2, 3},
+			[]int{-1, -2, -3},
+			[]slice.Zipped[int, int]{{1, -1}, {2, -2}, {3, -3}},
+		},
+		{
+			[]int{1, 2, 3},
+			[]int{-1, -2},
+			[]slice.Zipped[int, int]{{1, -1}, {2, -2}},
+		},
+		{
+			[]int{1, 2},
+			[]int{-1, -2, -3},
+			[]slice.Zipped[int, int]{{1, -1}, {2, -2}},
+		},
+		{
+			nil,
+			[]int{-1, -2, -3},
+			[]slice.Zipped[int, int]{},
+		},
+		{
+			[]int{1, 2, 3},
+			nil,
+			[]slice.Zipped[int, int]{},
+		},
+		{
+			nil,
+			nil,
+			[]slice.Zipped[int, int]{},
+		},
+	}
+
+	for _, c := range testCases {
+		if r := slice.Zip(c.a, c.b); !slice.Equals(r, c.want) {
+			t.Errorf("Zip(%v, %v) = %v, want %v", c.a, c.b, r, c.want)
 		}
 	}
 }
