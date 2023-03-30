@@ -245,14 +245,20 @@ func ReduceRight[S ~[]E, E, R any](s S, f func(v E, acc R) R, init R) R {
 	return init
 }
 
+// Remove returns a new slice with the first occurrence of v removed from s.
+// If v is not found in s, Remove returns s unchanged.
 func Remove[S ~[]E, E comparable](s S, v E) S {
 	return RemoveIndex(s, IndexOf(s, v))
 }
 
+// RemoveFunc returns a new slice with the first element e in s for which f(e) is true removed.
+// If no such element is found, RemoveFunc returns s unchanged.
 func RemoveFunc[S ~[]E, E any](s S, f func(E) bool) S {
 	return RemoveIndex(s, FindIndex(s, f))
 }
 
+// RemoveIndex returns a new slice with the element at index i removed from s.
+// If i is out of bounds for s, RemoveIndex returns s unchanged.
 func RemoveIndex[S ~[]E, E any](s S, i int) S {
 	if i < 0 || i >= len(s) {
 		return s
