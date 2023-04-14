@@ -38,6 +38,24 @@ func TestChunk(t *testing.T) {
 	}
 }
 
+func TestClone(t *testing.T) {
+	testCases := []struct {
+		s    []int
+		want []int
+	}{
+		{[]int{1, 2, 3}, []int{1, 2, 3}},
+		{[]int{1}, []int{1}},
+		{[]int{}, nil},
+		{nil, nil},
+	}
+
+	for _, c := range testCases {
+		if r := slice.Clone(c.s); !slice.Equals(r, c.want) {
+			t.Errorf("Clone(%v) = %v, want %v", c.s, r, c.want)
+		}
+	}
+}
+
 func TestConcat(t *testing.T) {
 	testCases := []struct {
 		ss   [][]int

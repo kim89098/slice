@@ -30,6 +30,13 @@ func Chunk[S ~[]E, E any](slice S, size int) []S {
 	return r
 }
 
+// Clone returns a copy of the input slice.
+func Clone[S ~[]E, E any](s S) S {
+	n := make(S, len(s))
+	copy(n, s)
+	return n
+}
+
 // Concat returns a new slice containing all the elements of the input slices in order.
 func Concat[S ~[]E, E any](ss ...S) S {
 	var totalLen int
