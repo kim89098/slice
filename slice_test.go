@@ -298,7 +298,7 @@ func TestGroupMap(t *testing.T) {
 			[]int{1, 2, 3, 4},
 			func(v int) int { return v % 2 },
 			func(v int) string { return fmt.Sprint(v) },
-			map[int][]string{0: []string{"2", "4"}, 1: []string{"1", "3"}},
+			map[int][]string{0: {"2", "4"}, 1: {"1", "3"}},
 		},
 		{
 			[]int{},
