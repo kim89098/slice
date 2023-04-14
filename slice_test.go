@@ -22,18 +22,8 @@ func TestChunk(t *testing.T) {
 	}
 
 	for _, c := range testCases {
-		r := slice.Chunk(c.s, c.i)
-
-		if len(r) != len(c.want) {
+		if r := slice.Chunk(c.s, c.i); !equals2D(r, c.want) {
 			t.Errorf("Chunk(%v, %v) = %v, want %v", c.s, c.i, r, c.want)
-			continue
-		}
-
-		for i, w := range c.want {
-			if !slice.Equals(r[i], w) {
-				t.Errorf("Chunk(%v, %v) = %v, want %v", c.s, c.i, r, c.want)
-				break
-			}
 		}
 	}
 }
@@ -133,16 +123,8 @@ func TestExpand2D(t *testing.T) {
 	}
 
 	for _, c := range testCases {
-		r := slice.Expand2D(c.s, c.m, c.n)
-
-		if len(r) != len(c.want) {
-			t.Errorf("len(r) = %v, want %v", len(r), len(c.want))
-		}
-
-		for i, s := range r {
-			if !slice.Equals(s, c.want[i]) {
-				t.Errorf("got %v, want %v", s, c.want[i])
-			}
+		if r := slice.Expand2D(c.s, c.m, c.n); !equals2D(r, c.want) {
+			t.Errorf("Expand2D(%v, %v, %v) = %v, want %v", c.s, c.m, c.n, r, c.want)
 		}
 	}
 }
@@ -705,4 +687,18 @@ func TestZip(t *testing.T) {
 			t.Errorf("Zip(%v, %v) = %v, want %v", c.a, c.b, r, c.want)
 		}
 	}
+}
+
+func equals2D[T comparable](a, b [][]T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i, s := range b {
+		if !slice.Equals(a[i], s) {
+			return false
+		}
+	}
+
+	return true
 }
